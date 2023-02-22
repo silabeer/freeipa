@@ -1,0 +1,8 @@
+---
+# defaults file for freeipa
+freeipa_server_fqdn: ipa.example.com
+freeipa_server_ip: "{{ ansible_default_ipv4.address }}"
+freeipa_server_realm: EXAMPLE.COM
+freeipa_server_domain: example.com
+freeipa_server_ds_password: Secret123
+freeipa_server_admin_password: Secret123

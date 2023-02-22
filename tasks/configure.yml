@@ -1,0 +1,51 @@
+---
+- name: Enable IPv6 with sysctl
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "0"
+    state: "present"
+    reload: "yes"
+  with_items:
+    - net.ipv6.conf.all.disable_ipv6
+    - net.ipv6.conf.default.disable_ipv6
+    - net.ipv6.conf.lo.disable_ipv6
+
+- name: Create docker daemon.json
+  ansible.builtin.template:
+    src: templates/server.conf.j2
+    dest: /etc/ipa/server.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart ipa services
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ freeipa_server_fqdn | default(ansible_fqdn) }}"
+  when: run_not_in_container
+
+- name: Add freeipa to hosts
+  ansible.builtin.lineinfile:
+    dest: /etc/hosts
+    line: >
+         "{{ freeipa_server_ip | default('127.0.0.1') }}
+          {{ freeipa_server_fqdn | default(ansible_fqdn) }}"
+  when: run_not_in_container
+
+- name: Workaround for docker run FreeIpa
+  ansible.builtin.replace:
+    path: /usr/lib/systemd/system/dirsrv@.service
+    regexp: '^ExecStartPre*'
+    replace: ''
+  when: not run_not_in_container
+
+- name: Run the FreeIPA server installer
+  args:
+    creates: /etc/ipa/default.conf
+  ansible.builtin.command: >
+           ipa-server-install -U -r {{ freeipa_server_realm }}
+           -n {{ freeipa_server_domain }}
+           -p {{ freeipa_server_ds_password }}
+           -a {{ freeipa_server_admin_password }}
+           --setup-dns --no-ntp --forwarder=8.8.8.8
+  notify: Restart ipa services

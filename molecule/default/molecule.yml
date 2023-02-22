@@ -1,0 +1,32 @@
+---
+dependency:
+  name: galaxy
+  enable: true
+  options:
+    role-file: requirements.yml
+    requirements-file: requirements.yml
+driver:
+  name: docker
+lint: |
+ set -e
+ yamllint .
+ ansible-lint . --exclude meta/
+platforms:
+  - name: ipa.example.com
+    image: "geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    cpus: 4
+    dns:
+      - 8.8.8.8
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+provisioner:
+  name: ansible
+  vars:
+    run_not_in_container: false
+  playbooks:
+    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+    side_effect: ${MOLECULE_PLAYBOOK:-side_effect.yml}
+verifier:
+  name: testinfra

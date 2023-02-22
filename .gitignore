@@ -1,0 +1,3 @@
+.yamllint
+__pycache__/
+.vagrant/

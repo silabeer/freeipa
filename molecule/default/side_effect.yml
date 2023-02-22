@@ -1,0 +1,44 @@
+---
+- name: Side Effect
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    run_not_in_container: false
+    freeipa_server_fqdn: ipa.example.com
+    freeipa_server_ip: "{{ ansible_default_ipv4.address }}"
+    freeipa_server_realm: example.com
+    freeipa_server_domain: example.com
+    freeipa_server_ds_password: Secret123
+    freeipa_server_admin_password: Secret123
+  tasks:
+    - name: Install pexpect
+      ansible.builtin.pip:
+        name: pexpect
+
+    - name: Apply admin kerberos ticket
+      ansible.builtin.expect:
+        command: "kinit admin"
+        responses:
+          (?i)Password(.*): "{{ freeipa_server_admin_password }}"
+
+    - name: Creating user admin
+      freeipa.ansible_freeipa.ipauser:
+        ipaadmin_principal: admin
+        ipaadmin_password: "{{ freeipa_server_admin_password }}"
+        name: hdfs
+        first: "Hadoop"
+        last: "Admin"
+        password: "{{ freeipa_server_admin_password }}"
+        update_password: on_create
+        shell: "/bin/bash"
+
+    - name: Creating DNS Record for host
+      freeipa.ansible_freeipa.ipadnsrecord:
+        ipaadmin_principal: admin
+        ipaadmin_password: "{{ freeipa_server_admin_password }}"
+        zone_name: "{{ freeipa_server_domain }}"
+        name: "host01.example.com"
+        record_type: "A"
+        record_value: "{{ ansible_default_ipv4.address }}"
+        state: present

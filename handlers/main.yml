@@ -1,0 +1,15 @@
+---
+# handlers file for freeipa
+- name: Restart ipa services
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: ipa
+    state: restarted
+
+- name: Restart firewalld services
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: firewalld
+    state: restarted

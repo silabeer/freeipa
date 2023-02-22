@@ -1,0 +1,29 @@
+---
+- name: Install firewalld
+  ansible.builtin.yum:
+    name: firewalld
+    state: present
+
+- name: Enable and start firewalld
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Allow trafic for DC
+  ansible.posix.firewalld:
+    zone: public
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+  with_items:
+    - dns
+    - http
+    - https
+    - kerberos
+    - kpasswd
+    - ldap
+    - ldaps
+    - ntp
+  notify: Restart firewalld services

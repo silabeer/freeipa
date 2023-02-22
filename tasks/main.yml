@@ -1,0 +1,18 @@
+---
+# tasks file for freeipa
+- name: Install epel-release
+  ansible.builtin.yum:
+    name: epel-release
+    state: present
+
+- name: Include Chronyd
+  ansible.builtin.import_tasks: "chronyd.yml"
+
+- name: Include Firewalld
+  ansible.builtin.import_tasks: "firewalld.yml"
+
+- name: Include Install FreeIpa
+  ansible.builtin.import_tasks: "install.yml"
+
+- name: Include Configure
+  ansible.builtin.import_tasks: "configure.yml"

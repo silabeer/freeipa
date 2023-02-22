@@ -1,0 +1,39 @@
+---
+- name: Install freeipa package
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present
+  delay: 10
+  register: result
+  retries: 3
+  until: result is succeeded
+  loop:
+    - bind
+    - bind-utils
+    - bind-dyndb-ldap
+    - ipa-server
+    - ipa-client
+    - ipa-server-dns
+    - ipa-server-trust-ad
+    - samba-client
+    - samba-winbind-clients
+
+- name: Upgrade nss package
+  ansible.builtin.yum:
+    name: nss-3.79.0
+    state: present
+
+- name: Get-pip.py
+  ansible.builtin.get_url:
+    url: https://bootstrap.pypa.io/pip/2.7/get-pip.py
+    dest: /tmp/get-pip.py
+    mode: '0440'
+  changed_when: false
+
+- name: Install pip
+  ansible.builtin.command: python /tmp/get-pip.py
+  changed_when: false
+
+- name: Install cryptography
+  ansible.builtin.command: pip install -I cryptography
+  changed_when: false

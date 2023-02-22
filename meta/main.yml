@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  standalone: true
+  platforms:
+    - name: сentos
+      versions:
+        - 7
+  role_name: freeipa
+  author: Kirill Borisov
+  namespace: silabeer
+  description: This roles will install freeipa
+  company: silabeer
+  license: license (GPL-2.0-or-later)
+  min_ansible_version: "2.1"
+  galaxy_tags: []
+dependencies: []
